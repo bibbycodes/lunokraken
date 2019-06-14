@@ -2,16 +2,23 @@ const express = require('express')
 const router = express.Router()
 const axios = require('axios')
 const Price = require('../../models/prices')
+const axios = require('axios')
 
-router.post('/latest',  (req, res) => {
-    const data = getPrices()
-    const price = new Price({
-        BTCNGN: data.BTCNGN,
-        BTCUSD: data.BTCUSD,
-        timestamp: data.timestamp
+router.get('/',  (req, res) => {
+    const prices = getPrices()
+
+    prices.then( data => {
+        console.log("full data", data)
+
+        const price = new Price({
+            BTCNGN: data.BTCNGN,
+            BTCUSD: data.BTCUSD,
+            timestamp: data.timestamp
+        })
+        price.save()
+        .then(price => res.json(price))
     })
-    price.save()
-    .then(price => res.json(price))
+
 })
 
 function getPrices() {
@@ -22,7 +29,7 @@ function getPrices() {
     var lunoData
     var krakenData
 
-    axios.get("https://api.mybitx.com/api/1/ticker?pair=XBTNGN")
+    return axios.get("https://api.mybitx.com/api/1/ticker?pair=XBTNGN")
     .then(res => {
         lunoData = {
             pair: 'BTCNGN',
@@ -31,26 +38,30 @@ function getPrices() {
             bid: res.data.bid,
             ask: res.data.ask
         } 
-        console.log(lunoData)
-        })
-    .catch(err => console.log(err))
+        //console.log("Luno data" , lunoData)
 
-    axios.get(krakenServer)
-    .then(res => {
-        krakenData = {
-            pair: 'BTCUSD',
-            date: Date.parse(res.headers.date),
-            price: res.data.result.XXBTZUSD.o
-        }
-        console.log(krakenData)
-        })
-    .catch(err => console.log(err))
+        return lunoData;
+    }).then( (lunoData) => {
 
-    return {
-        BTCNGN: lunoData.price,
-        BTCUSD: krakenData.price,
-        timestamp: Date.now()
-    }
+        console.log("luno data", lunoData);
+
+        return axios.get(krakenServer)
+        .then(res => {
+            krakenData = {
+                pair: 'BTCUSD',
+                date: Date.parse(res.headers.date),
+                price: res.data.result.XXBTZUSD.o
+            }
+
+            return {
+                BTCNGN: lunoData.price,
+                BTCUSD: krakenData.price,
+                timestamp: Date.now()
+            }
+        })
+    })
+
+    .catch(err => console.log(err))
 }
 
 router.get('/luno', (req,res) => {

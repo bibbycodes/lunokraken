@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const axios = require('axios')
 const Price = require('../../models/prices')
 
 router.post('/latest',  (req, res) => {
@@ -94,3 +95,4 @@ router.get('/kraken', (req,res) => {
     })
 
     module.exports = router
+    console.log(getPrices())

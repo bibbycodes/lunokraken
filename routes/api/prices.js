@@ -10,16 +10,15 @@ router.get('/add',  (req, res) => {
     const prices = getPrices()
 
     prices.then( data => {
-        console.log("full data", data)
-
         const price = new Price({
             BTCNGN: data.BTCNGN,
             BTCUSD: data.BTCUSD,
             USDNGN: 360,
             timestamp: data.timestamp
         })
+        console.log("adding all data to db:", data)
         price.save()
-        .then(price => res.json(price))
+        //.then(price => res.json(price))
         .then(price => res.send(price))
     })
 
@@ -46,7 +45,7 @@ function getPrices() {
     })
     .then( (lunoData) => {
 
-        console.log("luno data", lunoData);
+        console.log("getting luno data: \n ", lunoData);
         return axios.get(krakenServer)
         .then(res => {
             krakenData = {
@@ -121,4 +120,12 @@ router.get('/all', (req,res)=> {
     .then(prices => res.json(prices))
 })
 
-    module.exports = router
+router.get('/last', (req, res) => {
+    Price.find()
+    .limit(1)
+    .sort({$natural:-1})
+    .then(lastPrice => res.json(lastPrice))
+})
+
+module.exports = router
+

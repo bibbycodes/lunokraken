@@ -3,7 +3,10 @@ const router = express.Router()
 const axios = require('axios')
 const Price = require('../../models/prices')
 
-router.get('/',  (req, res) => {
+// @route prices api/prices/add
+// @desc get latest price from luno and kraken apis, save to database
+// @access public
+router.get('/add',  (req, res) => {
     const prices = getPrices()
 
     prices.then( data => {
@@ -61,6 +64,9 @@ function getPrices() {
 
     .catch(err => console.log(err))
 }
+// @route prices api/prices/luno
+// @desc get latest price from luno api
+// @access public
 
 router.get('/luno', (req,res) => {
     const lunoPair = 'XBTNGN'
@@ -71,38 +77,48 @@ router.get('/luno', (req,res) => {
         .then(res => {
             lunoData = {
                 pair: 'BTCNGN',
-                date : res.data.timestamp,
+                timestamp : res.data.timestamp,
                 price : res.data.last_trade,
                 bid: res.data.bid,
                 ask: res.data.ask
             } 
+            console.log(lunoData)
             return lunoData
             })    
         //.then(lunoData => res.json(lunoData))
         .then(lunoData => res.send(lunoData))
         .catch(err => console.log(err))
     })
+// @route prices api/prices/kraken
+// @desc get latest price from kraken api
+// @access public
 
 router.get('/kraken', (req,res) => {
     const krakenPair = 'XXBTZUSD'
     const krakenServer = 'https://api.kraken.com/0/public/Ticker?pair=XXBTZUSD'
-
     var krakenData
 
     return axios.get(krakenServer)
         .then(res => {
             krakenData = {
                 pair: 'BTCUSD',
-                date: Date.parse(res.headers.date),
+                timestamp: Date.parse(res.headers.date),
                 price: res.data.result.XXBTZUSD.o
             }
+            console.log(krakenData)
             return krakenData
             })
         //.then(krakenData => res.json(krakenData))
         .then(krakenData => res.send(krakenData))
         .catch(err => console.log(err))
-
-    res.send(krakenData)
     })
+// @route prices api/prices/all
+// @desc Get All Prices
+// @access Public
+router.get('/all', (req,res)=> {
+    Price.find()
+    .sort({ timestamp: -1})
+    .then(prices => res.json(prices))
+})
 
     module.exports = router

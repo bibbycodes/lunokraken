@@ -2,7 +2,6 @@ const express = require('express')
 const router = express.Router()
 const axios = require('axios')
 const Price = require('../../models/prices')
-const axios = require('axios')
 
 router.get('/',  (req, res) => {
     const prices = getPrices()
@@ -13,10 +12,12 @@ router.get('/',  (req, res) => {
         const price = new Price({
             BTCNGN: data.BTCNGN,
             BTCUSD: data.BTCUSD,
+            USDNGN: 360,
             timestamp: data.timestamp
         })
         price.save()
         .then(price => res.json(price))
+        .then(price => res.send(price))
     })
 
 })
@@ -38,13 +39,11 @@ function getPrices() {
             bid: res.data.bid,
             ask: res.data.ask
         } 
-        //console.log("Luno data" , lunoData)
-
         return lunoData;
-    }).then( (lunoData) => {
+    })
+    .then( (lunoData) => {
 
         console.log("luno data", lunoData);
-
         return axios.get(krakenServer)
         .then(res => {
             krakenData = {
@@ -52,7 +51,6 @@ function getPrices() {
                 date: Date.parse(res.headers.date),
                 price: res.data.result.XXBTZUSD.o
             }
-
             return {
                 BTCNGN: lunoData.price,
                 BTCUSD: krakenData.price,
@@ -69,7 +67,7 @@ router.get('/luno', (req,res) => {
     const lunoServer = 'https://api.mybitx.com/api/1/ticker?pair=XBTNGN'
     var lunoData
 
-    axios.get("https://api.mybitx.com/api/1/ticker?pair=XBTNGN")
+    return axios.get(lunoServer)
         .then(res => {
             lunoData = {
                 pair: 'BTCNGN',
@@ -78,11 +76,11 @@ router.get('/luno', (req,res) => {
                 bid: res.data.bid,
                 ask: res.data.ask
             } 
-            console.log(lunoData)
-            })
+            return lunoData
+            })    
+        //.then(lunoData => res.json(lunoData))
+        .then(lunoData => res.send(lunoData))
         .catch(err => console.log(err))
-
-    res.send(lunoData)
     })
 
 router.get('/kraken', (req,res) => {
@@ -91,19 +89,20 @@ router.get('/kraken', (req,res) => {
 
     var krakenData
 
-    axios.get(krakenServer)
+    return axios.get(krakenServer)
         .then(res => {
             krakenData = {
                 pair: 'BTCUSD',
                 date: Date.parse(res.headers.date),
                 price: res.data.result.XXBTZUSD.o
             }
-            console.log(krakenData)
+            return krakenData
             })
+        //.then(krakenData => res.json(krakenData))
+        .then(krakenData => res.send(krakenData))
         .catch(err => console.log(err))
 
     res.send(krakenData)
     })
 
     module.exports = router
-    console.log(getPrices())

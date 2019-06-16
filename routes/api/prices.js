@@ -8,7 +8,6 @@ const Price = require('../../models/prices')
 // @access public
 router.get('/add',  (req, res) => {
     const prices = getPrices()
-
     prices.then( data => {
         const price = new Price({
             BTCNGN: data.BTCNGN,
@@ -44,8 +43,6 @@ function getPrices() {
         return lunoData;
     })
     .then( (lunoData) => {
-
-        console.log("getting luno data: \n ", lunoData);
         return axios.get(krakenServer)
         .then(res => {
             krakenData = {
@@ -56,6 +53,7 @@ function getPrices() {
             return {
                 BTCNGN: lunoData.price,
                 BTCUSD: krakenData.price,
+                USDNGN: 360,
                 timestamp: Date.now()
             }
         })

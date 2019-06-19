@@ -20,7 +20,6 @@ router.get('/add',  (req, res) => {
         //.then(price => res.json(price))
         .then(price => res.send(price))
     })
-
 })
 
 function getPrices() {

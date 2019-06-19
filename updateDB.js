@@ -42,7 +42,7 @@ function updatePricesPeriodically(lastUpdateTimestamp = 0) {
         }
 }
 
-var task = cron.schedule('*/2 * * * *', () => {
+var task = cron.schedule('*/5 * * * *', () => {
     addEntry()
 });
 task.start()

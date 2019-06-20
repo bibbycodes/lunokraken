@@ -10,9 +10,8 @@ router.get('/add',  (req, res) => {
     const prices = getPrices()
     prices.then( data => {
         const price = new Price({
-            BTCNGN: data.BTCNGN,
-            BTCUSD: data.BTCUSD,
-            USDNGN: 360,
+            LunoPrice: data.lunoPrice,
+            KrakenPrice: data.krakenPrice,
             timestamp: data.timestamp
         })
         console.log("adding all data to db:", data)
@@ -30,7 +29,7 @@ function getPrices() {
     var lunoData
     var krakenData
 
-    return axios.get("https://api.mybitx.com/api/1/ticker?pair=XBTNGN")
+    return axios.get(lunoServer)
     .then(res => {
         lunoData = {
             pair: 'BTCNGN',
@@ -50,8 +49,8 @@ function getPrices() {
                 price: res.data.result.XXBTZUSD.o
             }
             return {
-                BTCNGN: lunoData.price,
-                BTCUSD: krakenData.price,
+                lunoPrice: (lunoData.price/360).toFixed(2),
+                krakenPrice: krakenData.price,
                 USDNGN: 360,
                 timestamp: Date.now()
             }

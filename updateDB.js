@@ -1,10 +1,11 @@
 const axios = require('axios')
 const cron = require('node-cron') 
 
-function addEntry() {
-    data = axios.get('http://localhost:5000/api/prices/add')
-    .then(data => console.log(data.data))
+function addEntry(endpoint) {
+    data = axios.get(`http://localhost:5000/api/prices/${endpoint}`)
+    .then(data => console.log("\n", data.data))
 }
+
 
 const sleep = (milliseconds) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
@@ -42,7 +43,8 @@ function updatePricesPeriodically(lastUpdateTimestamp = 0) {
         }
 }
 
-var task = cron.schedule('*/5 * * * *', () => {
-    addEntry()
+var cronFiveMinutes = cron.schedule('*/5 * * * *', () => {
+    addEntry('add')
 });
-task.start()
+
+cronFiveMinutes.start()
